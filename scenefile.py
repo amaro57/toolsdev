@@ -25,10 +25,8 @@ class SceneFile(object):
         path = Path(path)
         self.folder_path = path.parent
         self.ext = path.suffix
-        print(re.match('([^_]+)+', path.stem))
-        print(re.findall('([^_]+)+', path.stem))
-        #self.descriptor, self.task, ver = re.split("/[^_]+/g", path.stem)
-        #self.ver = int(ver.split("v")[-1])
+        self.descriptor, self.task, ver = re.findall('([^_]+)+', path.stem)
+        self.ver = int(ver.split("v")[-1])
 
 
 scene_file = SceneFile("F:/tank_model_v1.ma")
