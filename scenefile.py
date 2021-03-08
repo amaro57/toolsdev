@@ -1,4 +1,4 @@
-from pathlib import Path
+from pymel.core.system import Path
 import re
 
 class SceneFile(object):
@@ -24,8 +24,8 @@ class SceneFile(object):
     def _init_from_path(self, path):
         path = Path(path)
         self.folder_path = path.parent
-        self.ext = path.suffix
-        self.descriptor, self.task, ver = re.findall('([^_]+)+', path.stem)
+        self.ext = path.ext
+        self.descriptor, self.task, ver = re.findall('([^_]+)+', path.name.stripext())
         self.ver = int(ver.split("v")[-1])
 
 
