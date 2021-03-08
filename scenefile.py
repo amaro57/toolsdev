@@ -85,3 +85,7 @@ class SceneFile(object):
         """
         self.ver = self.next_avail_ver()
         self.save()
+
+
+# I get Error: WindowsError: file C:\Program Files\Autodesk\Maya2020\Python\lib\site-packages\pymel\util\path.py line 483: 3 
+# when in a new scene. Why?
