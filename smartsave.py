@@ -3,9 +3,28 @@ import logging
 import pymel.core as pmc
 from pymel.core.system import Path
 import re
+from PySide2 import QtCore, QtWidgets
+from shiboken2 import wrapInstance
+import maya.OpenMayaUI as omui
 
 log = logging.getLogger(__name__)
 
+
+def maya_main_window():
+    """Return the Maya main window widget"""
+    main_window = omui.MQtUtil_mainWindow()
+    return wrapInstance(long(main_window), QtWidgets.QWidget)
+
+
+class SmartSaveUI(QtWidgets.QDialog):
+    """Smart Class UI Class"""
+    
+    def __init__(self):
+        super(SmartSaveUI, self).__init__(parent=maya_main_window())
+        self.setWindowTitle("Smart Save")
+        self.setMinimumWidth(500)
+        self.setMaximumHeight(200)
+        self.setWindowFlags(self.windowFlags() ^ QtCore.Qt.WindowContextHelpButtonHint)
 
 class SceneFile(object):
 
@@ -69,7 +88,7 @@ class SceneFile(object):
             return 1
         matching_scenefiles.sort(reverse=True)
         latest_scenefile = matching_scenefiles[0]
-        # How do I get auto complete here? Is it because latest_scene is dynamic?
+        # How do I get auto complete here? Does it not work because latest_scene is dynamic?
         latest_scenefile = latest_scenefile.name.stripext()
         latest_ver_num = int(latest_scenefile.split("_v")[-1])
         return latest_ver_num + 1
