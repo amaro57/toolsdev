@@ -19,17 +19,18 @@ def maya_main_window():
 
 class SmartSaveUI(QtWidgets.QDialog):
     """Smart Class UI Class"""
-    
+
     def __init__(self):
         super(SmartSaveUI, self).__init__(parent=maya_main_window())
         self.setWindowTitle("Smart Save")
         self.setMinimumWidth(500)
         self.setMaximumHeight(200)
-        self.setWindowFlags(self.windowFlags() ^ QtCore.Qt.WindowContextHelpButtonHint)
+        self.setWindowFlags(self.windowFlags() ^
+                            QtCore.Qt.WindowContextHelpButtonHint)
         self.scenefile = SceneFile()
         self.create_ui()
         self.create_connections()
-        
+
     def create_ui(self):
         self.title_lbl = QtWidgets.QLabel("Smart Save")
         self.title_lbl.setStyleSheet("font: bold 20px")
@@ -43,42 +44,42 @@ class SmartSaveUI(QtWidgets.QDialog):
         self.main_lay.addStretch()
         self.main_lay.addLayout(self.button_lay)
         self.setLayout(self.main_lay)
-        
+
     def create_connections(self):
         """Connect Signals and Slots"""
         self.folder_browse_btn.clicked.connect(self._browse_folder)
         self.save_btn.clicked.connect(self._save)
         self.save_inc_btn.clicked.connect(self._save_increment)
-        
+
     @QtCore.Slot()
     def _save_increment(self):
         """Save an increment of the scene"""
         self._set_scenefile_properties_from_ui()
         self.scenefile.save_increment()
         self.ver_sbx.setValue(self.scenefile.ver)
-        
+
     @QtCore.Slot()
     def _save(self):
         """Save the scene"""
         self._set_scenefile_properties_from_ui()
         self.scenefile.save()
-        
+
     def _set_scenefile_properties_from_ui(self):
         self.scenefile.folder_path = self.folder_le.text()
         self.scenefile.descriptor = self.descriptor_le.text()
         self.scenefile.task = self.task_le.text()
         self.scenefile.ver = self.ver_sbx.value()
         self.scenefile.ext = self.ext_lbl.text()
-        
-    @QtCore.Slot()    
+
+    @QtCore.Slot()
     def _browse_folder(self):
         """Opens a dialogue box to browse the folder"""
         folder = QtWidgets.QFileDialog.getExistingDirectory(
             parent=self, caption="Select Folder", dir=self.folder_le.text(),
-            options=QtWidgets.QFileDialog.ShowDirsOnly | 
+            options=QtWidgets.QFileDialog.ShowDirsOnly |
             QtWidgets.QFileDialog.DontResolveSymlinks)
         self.folder_le.setText(folder)
-        
+
     def _create_button_ui(self):
         self.save_btn = QtWidgets.QPushButton("Save")
         self.save_inc_btn = QtWidgets.QPushButton("Save Increment")
@@ -86,7 +87,7 @@ class SmartSaveUI(QtWidgets.QDialog):
         layout.addWidget(self.save_btn)
         layout.addWidget(self.save_inc_btn)
         return layout
-        
+
     def _create_filename_ui(self):
         layout = self._create_filename_headers()
         self.descriptor_le = QtWidgets.QLineEdit(self.scenefile.descriptor)
@@ -105,7 +106,7 @@ class SmartSaveUI(QtWidgets.QDialog):
         layout.addWidget(self.ver_sbx, 1, 4)
         layout.addWidget(self.ext_lbl, 1, 5)
         return layout
-    
+
     def _create_filename_headers(self):
         self.descriptor_header_lbl = QtWidgets.QLabel("Descriptor")
         self.descriptor_header_lbl.setStyleSheet("font: bold")
@@ -118,7 +119,7 @@ class SmartSaveUI(QtWidgets.QDialog):
         layout.addWidget(self.task_header_lbl, 0, 2)
         layout.addWidget(self.ver_header_lbl, 0, 4)
         return layout
-        
+
     def _create_folder_ui(self):
         default_folder = Path(cmds.workspace(rootDirectory=True, query=True))
         default_folder = default_folder / "scenes"
@@ -129,10 +130,12 @@ class SmartSaveUI(QtWidgets.QDialog):
         layout.addWidget(self.folder_browse_btn)
         return layout
 
+
 class SceneFile(object):
 
     def __init__(self, path=None):
-        self._folder_path = Path(cmds.workspace(query=True, rootDirectory=True)) / "scenes"
+        self._folder_path = Path(cmds.workspace(
+            query=True, rootDirectory=True)) / "scenes"
         self.descriptor = 'main'
         self.task = 'model'
         self.ver = 1
@@ -148,8 +151,8 @@ class SceneFile(object):
     @property
     def folder_path(self):
         return self._folder_path
-    
-    #Note, look into equivalent getter/setter for other languages and how Python property overide contrasts/compares
+
+    # Note, look into equivalent getter/setter for other languages and how Python property overide contrasts/compares
     @folder_path.setter
     def folder_path(self, val):
         self._folder_path = Path(val)
@@ -217,5 +220,5 @@ class SceneFile(object):
         self.save()
 
 
-# I get Error: WindowsError: file C:\Program Files\Autodesk\Maya2020\Python\lib\site-packages\pymel\util\path.py line 483: 3 
+# I get Error: WindowsError: file C:\Program Files\Autodesk\Maya2020\Python\lib\site-packages\pymel\util\path.py line 483: 3
 # when in a new scene. Why?
