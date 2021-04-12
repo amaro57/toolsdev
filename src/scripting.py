@@ -18,14 +18,14 @@ class ScatterToolUI(QtWidgets.QDialog):
     
     def __init__(self):
         super(ScatterToolUI, self).__init__(parent=maya_main_window())
-        self.setWindowTitle("Smart Save")
+        self.setWindowTitle("Scatter Tool")
         self.setMinimumWidth(500)
         self.setMaximumHeight(300)
         self.setWindowFlags(self.windowFlags() ^
                             QtCore.Qt.WindowContextHelpButtonHint)
-        """self.scenefile = SceneFile()"""
+        self.scenefile = SceneFile()
         self.create_ui()
-        """self.create_connections()"""
+        self.create_connections()
         
     def create_ui(self):
         self.title_lbl = QtWidgets.QLabel("Scatter Tool")
@@ -50,9 +50,28 @@ class ScatterToolUI(QtWidgets.QDialog):
         """Connect Signals and Slots"""
         self.source_btn.clicked.connect(self._set_scatter_source)
         self.dest_btn.clicked.connect(self._set_scatter_dest)
+        """self.scatter_btn.clicked.connect(self._scatter)
         self.scale_btn.clicked.connect(self._scale)
-        self.rotate_btn.clicked.connect(self._rotate)
-        self.scatter_btn.clicked.connect(self._scatter)
+        self.rotate_btn.clicked.connect(self._rotate)"""
+        
+    @QtCore.Slot()
+    def _set_scatter_source(self):
+        selection = self.scenefile.set_scatter_source()
+        self.source_txt.setText(selection[0])
+    
+    @QtCore.Slot()
+    def _set_scatter_dest(self):
+        selection = self.scenefile.set_scatter_dest()
+        self.dest_txt.setText(str(self.parseArray(selection)))
+        
+    """@QtCore.Slot()
+    def _scatter(self):
+        
+    @QtCore.Slot()
+    def _scale(self):
+        
+    @QtCore.Slot()
+    def _rotate(self):"""
         
     def _create_scatter_ui(self):
         layout = self._create_scale_headers()
@@ -62,7 +81,7 @@ class ScatterToolUI(QtWidgets.QDialog):
         self.source_btn = QtWidgets.QPushButton("Set Scatter Source")
         self.dest_txt = QtWidgets.QTextEdit()
         self.dest_txt.setTextInteractionFlags(QtCore.Qt.NoTextInteraction)
-        self.dest_txt.setFixedHeight(30)
+        self.dest_txt.setFixedHeight(50)
         self.dest_btn = QtWidgets.QPushButton("Set Scatter Destination")
         layout = QtWidgets.QHBoxLayout()
         layout.addWidget(self.source_txt)
@@ -195,4 +214,27 @@ class ScatterToolUI(QtWidgets.QDialog):
         layout.addWidget(self.rotate_btn)
         return layout
     
+    def parseArray(self, selection):
+        str1 = ", ".join(selection)
+        return str1
     
+
+class SceneFile(object):
+    
+    """def __init__(self):"""
+        
+    def set_scatter_source(self):
+        self.sourceObject = cmds.ls(os=True, fl=True)
+        return self.sourceObject[0]
+        
+    def set_scatter_dest(self):
+        selection = cmds.ls(os=True, fl=True)
+        self.destSel = cmds.filterExpand(selection, selectionMask=31, expand=True)
+        print(self.destSel)
+        return self.destSel
+        
+    """def scatter(self):
+        
+    def scale(self):
+        
+    def rotate(self):"""
