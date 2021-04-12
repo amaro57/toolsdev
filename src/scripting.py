@@ -20,7 +20,7 @@ class ScatterToolUI(QtWidgets.QDialog):
         super(ScatterToolUI, self).__init__(parent=maya_main_window())
         self.setWindowTitle("Smart Save")
         self.setMinimumWidth(500)
-        self.setMaximumHeight(200)
+        self.setMaximumHeight(300)
         self.setWindowFlags(self.windowFlags() ^
                             QtCore.Qt.WindowContextHelpButtonHint)
         """self.scenefile = SceneFile()"""
@@ -31,20 +31,28 @@ class ScatterToolUI(QtWidgets.QDialog):
         self.title_lbl = QtWidgets.QLabel("Scatter Tool")
         self.title_lbl.setStyleSheet("font: bold 30px")
         self.scatter_lay = self._create_scatter_ui()
+        self.scatter_btn_lay = self._create_scatter_button_ui()
         self.scale_lay = self._create_scale_ui()
+        self.scale_btn_lay = self._create_scale_button_ui()
         self.rotate_lay = self._create_rotate_ui()
-        self.btn_lay = self._create_button_ui()
+        self.rotate_btn_lay = self._create_rotate_button_ui()
         self.main_lay = QtWidgets.QVBoxLayout()
         self.main_lay.addWidget(self.title_lbl)
         self.main_lay.addLayout(self.scatter_lay)
+        self.main_lay.addLayout(self.scatter_btn_lay)
         self.main_lay.addLayout(self.scale_lay)
+        self.main_lay.addLayout(self.scale_btn_lay)
         self.main_lay.addLayout(self.rotate_lay)
-        self.main_lay.addStretch()
-        self.main_lay.addLayout(self.btn_lay)
+        self.main_lay.addLayout(self.rotate_btn_lay)
         self.setLayout(self.main_lay)
         
     def create_connections(self):
         """Connect Signals and Slots"""
+        self.source_btn.clicked.connect(self._set_scatter_source)
+        self.dest_btn.clicked.connect(self._set_scatter_dest)
+        self.scale_btn.clicked.connect(self._scale)
+        self.rotate_btn.clicked.connect(self._rotate)
+        self.scatter_btn.clicked.connect(self._scatter)
         
     def _create_scatter_ui(self):
         layout = self._create_scale_headers()
@@ -169,10 +177,22 @@ class ScatterToolUI(QtWidgets.QDialog):
         layout.addWidget(self.rotatez_max_header_lbl, 1, 7)
         return layout
     
-    def _create_button_ui(self):
+    def _create_scatter_button_ui(self):
         self.scatter_btn = QtWidgets.QPushButton("Scatter")
         layout = QtWidgets.QHBoxLayout()
         layout.addWidget(self.scatter_btn)
+        return layout
+    
+    def _create_scale_button_ui(self):
+        self.scale_btn = QtWidgets.QPushButton("Scale")
+        layout = QtWidgets.QHBoxLayout()
+        layout.addWidget(self.scale_btn)
+        return layout
+    
+    def _create_rotate_button_ui(self):
+        self.rotate_btn = QtWidgets.QPushButton("Rotate")
+        layout = QtWidgets.QHBoxLayout()
+        layout.addWidget(self.rotate_btn)
         return layout
     
     
