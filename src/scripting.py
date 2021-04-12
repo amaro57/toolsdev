@@ -6,6 +6,7 @@ from shiboken2 import wrapInstance
 import maya.OpenMayaUI as omui
 import maya.cmds as cmds
 
+
 def maya_main_window():
     """Return the Maya main window widget"""
     main_window = omui.MQtUtil_mainWindow()
@@ -14,8 +15,7 @@ def maya_main_window():
 
 class ScatterToolUI(QtWidgets.QDialog):
     """Scatter Tool UI Class"""
-    
-    
+
     def __init__(self):
         super(ScatterToolUI, self).__init__(parent=maya_main_window())
         self.setWindowTitle("Scatter Tool")
@@ -26,7 +26,7 @@ class ScatterToolUI(QtWidgets.QDialog):
         self.scenefile = SceneFile()
         self.create_ui()
         self.create_connections()
-        
+
     def create_ui(self):
         self.title_lbl = QtWidgets.QLabel("Scatter Tool")
         self.title_lbl.setStyleSheet("font: bold 30px")
@@ -43,35 +43,33 @@ class ScatterToolUI(QtWidgets.QDialog):
         self.main_lay.addLayout(self.scale_lay)
         self.main_lay.addLayout(self.rotate_lay)
         self.setLayout(self.main_lay)
-        
+
     def create_connections(self):
         """Connect Signals and Slots"""
         self.source_btn.clicked.connect(self._set_scatter_source)
         self.dest_btn.clicked.connect(self._set_scatter_dest)
         self.scatter_btn.clicked.connect(self._scatter)
-        """self.scale_btn.clicked.connect(self._scale)
-        self.rotate_btn.clicked.connect(self._rotate)"""
-        
+
     @QtCore.Slot()
     def _set_scatter_source(self):
         selection = self.scenefile.set_scatter_source()
         self.source_txt.setText(selection)
-    
+
     @QtCore.Slot()
     def _set_scatter_dest(self):
         selection = self.scenefile.set_scatter_dest()
         self.dest_txt.setText(str(self.parseArray(selection)))
-        
+
     @QtCore.Slot()
     def _scatter(self):
         self.scale_val = [self.scalex_min_sbx.value(), self.scalex_max_sbx.value(),
                           self.scaley_min_sbx.value(), self.scaley_max_sbx.value(),
                           self.scalez_min_sbx.value(), self.scalez_max_sbx.value()]
         self.rotate_val = [self.rotatex_min_sbx.value(), self.rotatex_max_sbx.value(),
-                          self.rotatey_min_sbx.value(), self.rotatey_max_sbx.value(),
-                          self.rotatez_min_sbx.value(), self.rotatez_max_sbx.value()]
+                           self.rotatey_min_sbx.value(), self.rotatey_max_sbx.value(),
+                           self.rotatez_min_sbx.value(), self.rotatez_max_sbx.value()]
         self.scenefile.scatter(self.scale_val, self.rotate_val)
-        
+
     def _create_scatter_ui(self):
         layout = self._create_scale_headers()
         self.source_txt = QtWidgets.QTextEdit()
@@ -88,7 +86,7 @@ class ScatterToolUI(QtWidgets.QDialog):
         layout.addWidget(self.dest_txt)
         layout.addWidget(self.dest_btn)
         return layout
-    
+
     def _create_scale_ui(self):
         layout = self._create_scale_headers()
         self.scalex_min_sbx = QtWidgets.QDoubleSpinBox()
@@ -116,7 +114,7 @@ class ScatterToolUI(QtWidgets.QDialog):
         layout.addWidget(self.scaley_max_sbx, 2, 4)
         layout.addWidget(self.scalez_max_sbx, 2, 7)
         return layout
-        
+
     def _create_scale_headers(self):
         self.scale_title_lbl = QtWidgets.QLabel("Random Scale")
         self.scale_title_lbl.setStyleSheet("font: bold 20px")
@@ -141,7 +139,7 @@ class ScatterToolUI(QtWidgets.QDialog):
         layout.addWidget(self.scaley_max_header_lbl, 1, 4)
         layout.addWidget(self.scalez_max_header_lbl, 1, 7)
         return layout
-    
+
     def _create_rotate_ui(self):
         layout = self._create_rotate_headers()
         self.rotatex_min_sbx = QtWidgets.QSpinBox()
@@ -169,7 +167,7 @@ class ScatterToolUI(QtWidgets.QDialog):
         layout.addWidget(self.rotatey_max_sbx, 2, 4)
         layout.addWidget(self.rotatez_max_sbx, 2, 7)
         return layout
-    
+
     def _create_rotate_headers(self):
         self.rotate_title_lbl = QtWidgets.QLabel("Random Rotate")
         self.rotate_title_lbl.setStyleSheet("font: bold 20px")
@@ -194,60 +192,66 @@ class ScatterToolUI(QtWidgets.QDialog):
         layout.addWidget(self.rotatey_max_header_lbl, 1, 4)
         layout.addWidget(self.rotatez_max_header_lbl, 1, 7)
         return layout
-    
+
     def _create_scatter_button_ui(self):
         self.scatter_btn = QtWidgets.QPushButton("Scatter")
         layout = QtWidgets.QHBoxLayout()
         layout.addWidget(self.scatter_btn)
         return layout
-    
+
     def _create_scale_button_ui(self):
         self.scale_btn = QtWidgets.QPushButton("Scale")
         layout = QtWidgets.QHBoxLayout()
         layout.addWidget(self.scale_btn)
         return layout
-    
+
     def _create_rotate_button_ui(self):
         self.rotate_btn = QtWidgets.QPushButton("Rotate")
         layout = QtWidgets.QHBoxLayout()
         layout.addWidget(self.rotate_btn)
         return layout
-    
+
     def parseArray(self, selection):
         str1 = ", ".join(selection)
         return str1
-    
+
 
 class SceneFile(object):
-    
-    """def __init__(self):"""
-        
+
+    """Scenfile Operations"""
+
     def set_scatter_source(self):
         selection = cmds.ls(os=True, fl=True)
         self.sourceObject = selection[0]
         return self.sourceObject
-        
+
     def set_scatter_dest(self):
         selection = cmds.ls(os=True, fl=True)
-        self.destSel = cmds.filterExpand(selection, selectionMask=31, expand=True)
+        self.destSel = cmds.filterExpand(
+            selection, selectionMask=31, expand=True)
         print(self.destSel)
         return self.destSel
-        
+
     def scatter(self, scale, rotate):
         random.seed(1234)
-        
+
         scaleX = random.uniform(scale[0], scale[1])
         scaleY = random.uniform(scale[2], scale[3])
         scaleZ = random.uniform(scale[4], scale[5])
         rotateX = random.uniform(rotate[0], rotate[1])
         rotateY = random.uniform(rotate[2], rotate[3])
         rotateZ = random.uniform(rotate[4], rotate[5])
-        
+
         if cmds.objectType(self.sourceObject, isType="transform"):
             for vertex in self.destSel:
                 newInstance = cmds.instance(self.sourceObject)
                 position = cmds.pointPosition(vertex, w=True)
-                cmds.move(position[0], position[1], position[2], newInstance, a=True, ws=True)
+                cmds.move(
+                    position[0],
+                    position[1],
+                    position[2],
+                    newInstance,
+                    a=True,
+                    ws=True)
                 cmds.scale(scaleX, scaleY, scaleZ, newInstance)
                 cmds.rotate(rotateX, rotateY, rotateZ, newInstance)
-
