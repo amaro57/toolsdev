@@ -50,24 +50,25 @@ class ScatterToolUI(QtWidgets.QDialog):
         """Connect Signals and Slots"""
         self.source_btn.clicked.connect(self._set_scatter_source)
         self.dest_btn.clicked.connect(self._set_scatter_dest)
-        """self.scatter_btn.clicked.connect(self._scatter)
-        self.scale_btn.clicked.connect(self._scale)
+        self.scatter_btn.clicked.connect(self._scatter)
+        """self.scale_btn.clicked.connect(self._scale)
         self.rotate_btn.clicked.connect(self._rotate)"""
         
     @QtCore.Slot()
     def _set_scatter_source(self):
         selection = self.scenefile.set_scatter_source()
-        self.source_txt.setText(selection[0])
+        self.source_txt.setText(selection)
     
     @QtCore.Slot()
     def _set_scatter_dest(self):
         selection = self.scenefile.set_scatter_dest()
         self.dest_txt.setText(str(self.parseArray(selection)))
         
-    """@QtCore.Slot()
-    def _scatter(self):
-        
     @QtCore.Slot()
+    def _scatter(self):
+        self.scenefile.scatter()
+        
+    """@QtCore.Slot()
     def _scale(self):
         
     @QtCore.Slot()
@@ -224,8 +225,9 @@ class SceneFile(object):
     """def __init__(self):"""
         
     def set_scatter_source(self):
-        self.sourceObject = cmds.ls(os=True, fl=True)
-        return self.sourceObject[0]
+        selection = cmds.ls(os=True, fl=True)
+        self.sourceObject = selection[0]
+        return self.sourceObject
         
     def set_scatter_dest(self):
         selection = cmds.ls(os=True, fl=True)
@@ -233,8 +235,13 @@ class SceneFile(object):
         print(self.destSel)
         return self.destSel
         
-    """def scatter(self):
+    def scatter(self):
+        if cmds.objectType(self.sourceObject, isType="transform"):
+            for vertex in self.destSel:
+                newInstance = cmds.instance(self.sourceObject)
+                position = cmds.pointPosition(vertex, w=True)
+                cmds.move(position[0], position[1], position[2], newInstance, a=True, ws=True)
         
-    def scale(self):
+    """def scale(self):
         
     def rotate(self):"""
