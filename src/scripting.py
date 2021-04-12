@@ -35,7 +35,7 @@ class ScatterToolUI(QtWidgets.QDialog):
         self.button_lay = self._create_button_ui()
         self.main_lay = QtWidgets.QVBoxLayout()
         self.main_lay.addWidget(self.title_lbl)
-        self.main_lay.addLayout(self.select_lay)
+        self.main_lay.addLayout(self.source_lay)
         self.main_lay.addLayout(self.filename_lay)
         self.main_lay.addStretch()
         self.main_lay.addLayout(self.button_lay)
@@ -44,5 +44,21 @@ class ScatterToolUI(QtWidgets.QDialog):
     def create_connections(self):
         """Connect Signals and Slots"""
         
+    def _create_source_ui(self):
+        self.source_txt = QtWidgets.QTextEdit()
+        self.source_txt.setTextInteractionFlags(QtCore.Qt.NoTextInteraction)
+        self.source_btn = QtWidgets.QPushButton("Scatter Source")
+        self.dest_txt = QtWidgets.QTextEdit()
+        self.dest_txt.setTextInteractionFlags(QtCore.Qt.NoTextInteraction)
+        self.dest_btn = QtWidgets.QPushButton("Scatter Destination")
+        layout = QtWidgets.QHBoxLayout()
+        layout.addWidget(self.source_txt)
+        layout.addWidget(self.source_btn)
+        layout.addWidget(self.dest_txt)
+        layout.addWidget(self.dest_btn)
+        return layout
+    
+    def _create_scale_ui(self):
+        self.
     
     
