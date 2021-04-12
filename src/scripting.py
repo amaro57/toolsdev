@@ -41,9 +41,7 @@ class ScatterToolUI(QtWidgets.QDialog):
         self.main_lay.addLayout(self.scatter_lay)
         self.main_lay.addLayout(self.scatter_btn_lay)
         self.main_lay.addLayout(self.scale_lay)
-        self.main_lay.addLayout(self.scale_btn_lay)
         self.main_lay.addLayout(self.rotate_lay)
-        self.main_lay.addLayout(self.rotate_btn_lay)
         self.setLayout(self.main_lay)
         
     def create_connections(self):
@@ -66,13 +64,13 @@ class ScatterToolUI(QtWidgets.QDialog):
         
     @QtCore.Slot()
     def _scatter(self):
-        self.scenefile.scatter()
-        
-    """@QtCore.Slot()
-    def _scale(self):
-        
-    @QtCore.Slot()
-    def _rotate(self):"""
+        self.scale_val = [self.scalex_min_sbx.value(), self.scalex_max_sbx.value(),
+                          self.scaley_min_sbx.value(), self.scaley_max_sbx.value(),
+                          self.scalez_min_sbx.value(), self.scalez_max_sbx.value()]
+        self.rotate_val = [self.rotatex_min_sbx.value(), self.rotatex_max_sbx.value(),
+                          self.rotatey_min_sbx.value(), self.rotatey_max_sbx.value(),
+                          self.rotatez_min_sbx.value(), self.rotatez_max_sbx.value()]
+        self.scenefile.scatter(self.scale_val, self.rotate_val)
         
     def _create_scatter_ui(self):
         layout = self._create_scale_headers()
@@ -235,13 +233,21 @@ class SceneFile(object):
         print(self.destSel)
         return self.destSel
         
-    def scatter(self):
+    def scatter(self, scale, rotate):
+        random.seed(1234)
+        
+        scaleX = random.uniform(scale[0], scale[1])
+        scaleY = random.uniform(scale[2], scale[3])
+        scaleZ = random.uniform(scale[4], scale[5])
+        rotateX = random.uniform(rotate[0], rotate[1])
+        rotateY = random.uniform(rotate[2], rotate[3])
+        rotateZ = random.uniform(rotate[4], rotate[5])
+        
         if cmds.objectType(self.sourceObject, isType="transform"):
             for vertex in self.destSel:
                 newInstance = cmds.instance(self.sourceObject)
                 position = cmds.pointPosition(vertex, w=True)
                 cmds.move(position[0], position[1], position[2], newInstance, a=True, ws=True)
-        
-    """def scale(self):
-        
-    def rotate(self):"""
+                cmds.scale(scaleX, scaleY, scaleZ, newInstance)
+                cmds.rotate(rotateX, rotateY, rotateZ, newInstance)
+
