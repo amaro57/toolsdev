@@ -33,12 +33,14 @@ class ScatterToolUI(QtWidgets.QDialog):
         self.scatter_lay = self._create_scatter_ui()
         self.scale_lay = self._create_scale_ui()
         self.rotate_lay = self._create_rotate_ui()
+        self.btn_lay = self._create_button_ui()
         self.main_lay = QtWidgets.QVBoxLayout()
         self.main_lay.addWidget(self.title_lbl)
         self.main_lay.addLayout(self.scatter_lay)
         self.main_lay.addLayout(self.scale_lay)
         self.main_lay.addLayout(self.rotate_lay)
         self.main_lay.addStretch()
+        self.main_lay.addLayout(self.btn_lay)
         self.setLayout(self.main_lay)
         
     def create_connections(self):
@@ -48,10 +50,12 @@ class ScatterToolUI(QtWidgets.QDialog):
         layout = self._create_scale_headers()
         self.source_txt = QtWidgets.QTextEdit()
         self.source_txt.setTextInteractionFlags(QtCore.Qt.NoTextInteraction)
-        self.source_btn = QtWidgets.QPushButton("Scatter Source")
+        self.source_txt.setFixedHeight(30)
+        self.source_btn = QtWidgets.QPushButton("Set Scatter Source")
         self.dest_txt = QtWidgets.QTextEdit()
         self.dest_txt.setTextInteractionFlags(QtCore.Qt.NoTextInteraction)
-        self.dest_btn = QtWidgets.QPushButton("Scatter Destination")
+        self.dest_txt.setFixedHeight(30)
+        self.dest_btn = QtWidgets.QPushButton("Set Scatter Destination")
         layout = QtWidgets.QHBoxLayout()
         layout.addWidget(self.source_txt)
         layout.addWidget(self.source_btn)
@@ -163,6 +167,12 @@ class ScatterToolUI(QtWidgets.QDialog):
         layout.addWidget(self.rotatex_max_header_lbl, 1, 1)
         layout.addWidget(self.rotatey_max_header_lbl, 1, 4)
         layout.addWidget(self.rotatez_max_header_lbl, 1, 7)
+        return layout
+    
+    def _create_button_ui(self):
+        self.scatter_btn = QtWidgets.QPushButton("Scatter")
+        layout = QtWidgets.QHBoxLayout()
+        layout.addWidget(self.scatter_btn)
         return layout
     
     
