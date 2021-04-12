@@ -23,15 +23,15 @@ class ScatterToolUI(QtWidgets.QDialog):
         self.setMaximumHeight(200)
         self.setWindowFlags(self.windowFlags() ^
                             QtCore.Qt.WindowContextHelpButtonHint)
-        self.scenefile = SceneFile()
+        """self.scenefile = SceneFile()"""
         self.create_ui()
-        self.create_connections()
+        """self.create_connections()"""
         
     def create_ui(self):
         self.title_lbl = QtWidgets.QLabel("Scatter Tool")
         self.title_lbl.setStyleSheet("font: bold 30px")
-        "self.folder_lay = self._create_folder_ui()
-        "self.filename_lay = self._create_filename_ui()
+        self.scatter_lay = self._create_scatter_ui()
+        self.scale_lay = self._create_scale_ui()
         self.button_lay = self._create_button_ui()
         self.main_lay = QtWidgets.QVBoxLayout()
         self.main_lay.addWidget(self.title_lbl)
@@ -44,7 +44,8 @@ class ScatterToolUI(QtWidgets.QDialog):
     def create_connections(self):
         """Connect Signals and Slots"""
         
-    def _create_source_ui(self):
+    def _create_scatter_ui(self):
+        layout = self._create_scale_headers()
         self.source_txt = QtWidgets.QTextEdit()
         self.source_txt.setTextInteractionFlags(QtCore.Qt.NoTextInteraction)
         self.source_btn = QtWidgets.QPushButton("Scatter Source")
@@ -59,6 +60,23 @@ class ScatterToolUI(QtWidgets.QDialog):
         return layout
     
     def _create_scale_ui(self):
-        self.
+        layout = self._create_scale_headers()
+        
+    def _create_scale_headers(self):
+		self.scale_title_lbl = QtWidgets.QLabel("Random Scale")
+        self.title_lbl.setStyleSheet("font: bold 30px")
+        self.scalex_header_lbl = QtWidgets.QLabel("X")
+        self.scalex_header_lbl.setStyleSheet("font: bold")
+        self.scaley_header_lbl = QtWidgets.QLabel("Y")
+        self.scaley_header_lbl.setStyleSheet("font: bold")
+        self.scalez_header_lbl = QtWidgets.QLabel("Z")
+        self.scalez_header_lbl.setStyleSheet("font: bold")
+        layout = QtWidgets.QGridLayout()
+        layout.addWidget(self.scale_title_lbl, 0, 0)
+        layout.addWidget(self.scalex_header_lbl, 1, 0)
+        layout.addWidget(self.scaley_header_lbl, 1, 3)
+        layout.addWidget(self.scalez_header_lbl, 1, 6)
+        return layout
+        
     
     
