@@ -1,3 +1,5 @@
+import logging
+
 import pymel.core as pmc
 from pymel.core.system import Path
 import re
@@ -6,193 +8,217 @@ from shiboken2 import wrapInstance
 import maya.OpenMayaUI as omui
 import maya.cmds as cmds
 
+log = logging.getLogger(__name__)
+
+
 def maya_main_window():
     """Return the Maya main window widget"""
     main_window = omui.MQtUtil_mainWindow()
     return wrapInstance(long(main_window), QtWidgets.QWidget)
 
 
-class ScatterToolUI(QtWidgets.QDialog):
-    """Scatter Tool UI Class"""
-    
-    
+class SmartSaveUI(QtWidgets.QDialog):
+    """Smart Class UI Class"""
+
     def __init__(self):
-        super(ScatterToolUI, self).__init__(parent=maya_main_window())
+        super(SmartSaveUI, self).__init__(parent=maya_main_window())
         self.setWindowTitle("Smart Save")
         self.setMinimumWidth(500)
         self.setMaximumHeight(200)
         self.setWindowFlags(self.windowFlags() ^
                             QtCore.Qt.WindowContextHelpButtonHint)
-        """self.scenefile = SceneFile()"""
+        self.scenefile = SceneFile()
         self.create_ui()
-        """self.create_connections()"""
-        
+        self.create_connections()
+
     def create_ui(self):
-        self.title_lbl = QtWidgets.QLabel("Scatter Tool")
-        self.title_lbl.setStyleSheet("font: bold 30px")
-        self.scatter_lay = self._create_scatter_ui()
-        self.scatter_btn_lay = self._create_scatter_button_ui()
-        self.scale_lay = self._create_scale_ui()
-        self.scale_btn_lay = self._create_scale_button_ui()
-        self.rotate_lay = self._create_rotate_ui()
-        self.rotate_btn_lay = self._create_scale_button_ui()
+        self.title_lbl = QtWidgets.QLabel("Smart Save")
+        self.title_lbl.setStyleSheet("font: bold 20px")
+        self.folder_lay = self._create_folder_ui()
+        self.filename_lay = self._create_filename_ui()
+        self.button_lay = self._create_button_ui()
         self.main_lay = QtWidgets.QVBoxLayout()
         self.main_lay.addWidget(self.title_lbl)
-        self.main_lay.addLayout(self.scatter_lay)
-        self.main_lay.addLayout(self.scatter_btn_lay)
-        self.main_lay.addLayout(self.scale_lay)
-        self.main_lay.addLayout(self.scale_btn_lay)
-        self.main_lay.addLayout(self.rotate_lay)
-        self.main_lay.addLayout(self.rotate_btn_lay)
+        self.main_lay.addLayout(self.folder_lay)
+        self.main_lay.addLayout(self.filename_lay)
+        self.main_lay.addStretch()
+        self.main_lay.addLayout(self.button_lay)
         self.setLayout(self.main_lay)
-        
+
     def create_connections(self):
         """Connect Signals and Slots"""
-        self.source_btn.clicked.connect(self._set_scatter_source)
-        self.dest_btn.clicked.connect(self._set_scatter_dest)
-        self.scale_btn.clicked.connect(self._scale)
-        self.rotate_btn.clicked.connect(self._rotate)
-        self.scatter_btn.clicked.connect(self._scatter)
-        
-    def _create_scatter_ui(self):
-        layout = self._create_scale_headers()
-        self.source_txt = QtWidgets.QTextEdit()
-        self.source_txt.setTextInteractionFlags(QtCore.Qt.NoTextInteraction)
-        self.source_txt.setFixedHeight(30)
-        self.source_btn = QtWidgets.QPushButton("Set Scatter Source")
-        self.dest_txt = QtWidgets.QTextEdit()
-        self.dest_txt.setTextInteractionFlags(QtCore.Qt.NoTextInteraction)
-        self.dest_txt.setFixedHeight(30)
-        self.dest_btn = QtWidgets.QPushButton("Set Scatter Destination")
+        self.folder_browse_btn.clicked.connect(self._browse_folder)
+        self.save_btn.clicked.connect(self._save)
+        self.save_inc_btn.clicked.connect(self._save_increment)
+
+    @QtCore.Slot()
+    def _save_increment(self):
+        """Save an increment of the scene"""
+        self._set_scenefile_properties_from_ui()
+        self.scenefile.save_increment()
+        self.ver_sbx.setValue(self.scenefile.ver)
+
+    @QtCore.Slot()
+    def _save(self):
+        """Save the scene"""
+        self._set_scenefile_properties_from_ui()
+        self.scenefile.save()
+
+    def _set_scenefile_properties_from_ui(self):
+        self.scenefile.folder_path = self.folder_le.text()
+        self.scenefile.descriptor = self.descriptor_le.text()
+        self.scenefile.task = self.task_le.text()
+        self.scenefile.ver = self.ver_sbx.value()
+        self.scenefile.ext = self.ext_lbl.text()
+
+    @QtCore.Slot()
+    def _browse_folder(self):
+        """Opens a dialogue box to browse the folder"""
+        folder = QtWidgets.QFileDialog.getExistingDirectory(
+            parent=self, caption="Select Folder", dir=self.folder_le.text(),
+            options=QtWidgets.QFileDialog.ShowDirsOnly |
+            QtWidgets.QFileDialog.DontResolveSymlinks)
+        self.folder_le.setText(folder)
+
+    def _create_button_ui(self):
+        self.save_btn = QtWidgets.QPushButton("Save")
+        self.save_inc_btn = QtWidgets.QPushButton("Save Increment")
         layout = QtWidgets.QHBoxLayout()
-        layout.addWidget(self.source_txt)
-        layout.addWidget(self.source_btn)
-        layout.addWidget(self.dest_txt)
-        layout.addWidget(self.dest_btn)
+        layout.addWidget(self.save_btn)
+        layout.addWidget(self.save_inc_btn)
         return layout
-    
-    def _create_scale_ui(self):
-        layout = self._create_scale_headers()
-        self.scalex_min_sbx = QtWidgets.QDoubleSpinBox()
-        self.scalex_min_sbx.setDecimals(1)
-        self.scalex_min_sbx.setSingleStep(0.1)
-        self.scaley_min_sbx = QtWidgets.QDoubleSpinBox()
-        self.scaley_min_sbx.setDecimals(1)
-        self.scaley_min_sbx.setSingleStep(0.1)
-        self.scalez_min_sbx = QtWidgets.QDoubleSpinBox()
-        self.scalez_min_sbx.setDecimals(1)
-        self.scalez_min_sbx.setSingleStep(0.1)
-        self.scalex_max_sbx = QtWidgets.QDoubleSpinBox()
-        self.scalex_max_sbx.setDecimals(1)
-        self.scalex_max_sbx.setSingleStep(0.1)
-        self.scaley_max_sbx = QtWidgets.QDoubleSpinBox()
-        self.scaley_max_sbx.setDecimals(1)
-        self.scaley_max_sbx.setSingleStep(0.1)
-        self.scalez_max_sbx = QtWidgets.QDoubleSpinBox()
-        self.scalez_max_sbx.setDecimals(1)
-        self.scalez_max_sbx.setSingleStep(0.1)
-        layout.addWidget(self.scalex_min_sbx, 2, 0)
-        layout.addWidget(self.scaley_min_sbx, 2, 3)
-        layout.addWidget(self.scalez_min_sbx, 2, 6)
-        layout.addWidget(self.scalex_max_sbx, 2, 1)
-        layout.addWidget(self.scaley_max_sbx, 2, 4)
-        layout.addWidget(self.scalez_max_sbx, 2, 7)
+
+    def _create_filename_ui(self):
+        layout = self._create_filename_headers()
+        self.descriptor_le = QtWidgets.QLineEdit(self.scenefile.descriptor)
+        self.descriptor_le.setMinimumWidth(100)
+        self.task_le = QtWidgets.QLineEdit(self.scenefile.task)
+        self.task_le.setFixedWidth(50)
+        self.ver_sbx = QtWidgets.QSpinBox()
+        self.ver_sbx.setValue(self.scenefile.ver)
+        self.ver_sbx.setFixedWidth(50)
+        self.ver_sbx.setButtonSymbols(QtWidgets.QAbstractSpinBox.PlusMinus)
+        self.ext_lbl = QtWidgets.QLabel(".ma")
+        layout.addWidget(self.descriptor_le, 1, 0)
+        layout.addWidget(QtWidgets.QLabel("_"), 1, 1)
+        layout.addWidget(self.task_le, 1, 2)
+        layout.addWidget(QtWidgets.QLabel("_v"), 1, 3)
+        layout.addWidget(self.ver_sbx, 1, 4)
+        layout.addWidget(self.ext_lbl, 1, 5)
         return layout
-        
-    def _create_scale_headers(self):
-        self.scale_title_lbl = QtWidgets.QLabel("Random Scale")
-        self.scale_title_lbl.setStyleSheet("font: bold 20px")
-        self.scalex_min_header_lbl = QtWidgets.QLabel("X Min")
-        self.scalex_min_header_lbl.setStyleSheet("font: bold")
-        self.scaley_min_header_lbl = QtWidgets.QLabel("Y Min")
-        self.scaley_min_header_lbl.setStyleSheet("font: bold")
-        self.scalez_min_header_lbl = QtWidgets.QLabel("Z Min")
-        self.scalez_min_header_lbl.setStyleSheet("font: bold")
-        self.scalex_max_header_lbl = QtWidgets.QLabel("X Max")
-        self.scalex_max_header_lbl.setStyleSheet("font: bold")
-        self.scaley_max_header_lbl = QtWidgets.QLabel("Y Max")
-        self.scaley_max_header_lbl.setStyleSheet("font: bold")
-        self.scalez_max_header_lbl = QtWidgets.QLabel("Z Max")
-        self.scalez_max_header_lbl.setStyleSheet("font: bold")
+
+    def _create_filename_headers(self):
+        self.descriptor_header_lbl = QtWidgets.QLabel("Descriptor")
+        self.descriptor_header_lbl.setStyleSheet("font: bold")
+        self.task_header_lbl = QtWidgets.QLabel("Task")
+        self.task_header_lbl.setStyleSheet("font: bold")
+        self.ver_header_lbl = QtWidgets.QLabel("Version")
+        self.ver_header_lbl.setStyleSheet("font: bold")
         layout = QtWidgets.QGridLayout()
-        layout.addWidget(self.scale_title_lbl, 0, 0)
-        layout.addWidget(self.scalex_min_header_lbl, 1, 0)
-        layout.addWidget(self.scaley_min_header_lbl, 1, 3)
-        layout.addWidget(self.scalez_min_header_lbl, 1, 6)
-        layout.addWidget(self.scalex_max_header_lbl, 1, 1)
-        layout.addWidget(self.scaley_max_header_lbl, 1, 4)
-        layout.addWidget(self.scalez_max_header_lbl, 1, 7)
+        layout.addWidget(self.descriptor_header_lbl, 0, 0)
+        layout.addWidget(self.task_header_lbl, 0, 2)
+        layout.addWidget(self.ver_header_lbl, 0, 4)
         return layout
-    
-    def _create_rotate_ui(self):
-        layout = self._create_rotate_headers()
-        self.rotatex_min_sbx = QtWidgets.QSpinBox()
-        self.rotatex_min_sbx.setRange(0, 360)
-        self.rotatey_min_sbx = QtWidgets.QSpinBox()
-        self.rotatey_min_sbx.setRange(0, 360)
-        self.rotatez_min_sbx = QtWidgets.QSpinBox()
-        self.rotatez_min_sbx.setRange(0, 360)
-        self.rotatex_max_sbx = QtWidgets.QSpinBox()
-        self.rotatex_max_sbx.setRange(0, 360)
-        self.rotatey_max_sbx = QtWidgets.QSpinBox()
-        self.rotatey_max_sbx.setRange(0, 360)
-        self.rotatez_max_sbx = QtWidgets.QSpinBox()
-        self.rotatez_max_sbx.setRange(0, 360)
-        self.rotatex_min_sbx.setWrapping(True)
-        self.rotatey_min_sbx.setWrapping(True)
-        self.rotatez_min_sbx.setWrapping(True)
-        self.rotatex_max_sbx.setWrapping(True)
-        self.rotatey_max_sbx.setWrapping(True)
-        self.rotatez_max_sbx.setWrapping(True)
-        layout.addWidget(self.rotatex_min_sbx, 2, 0)
-        layout.addWidget(self.rotatey_min_sbx, 2, 3)
-        layout.addWidget(self.rotatez_min_sbx, 2, 6)
-        layout.addWidget(self.rotatex_max_sbx, 2, 1)
-        layout.addWidget(self.rotatey_max_sbx, 2, 4)
-        layout.addWidget(self.rotatez_max_sbx, 2, 7)
-        return layout
-    
-    def _create_rotate_headers(self):
-        self.rotate_title_lbl = QtWidgets.QLabel("Random Rotate")
-        self.rotate_title_lbl.setStyleSheet("font: bold 20px")
-        self.rotatex_min_header_lbl = QtWidgets.QLabel("X Min")
-        self.rotatex_min_header_lbl.setStyleSheet("font: bold")
-        self.rotatey_min_header_lbl = QtWidgets.QLabel("Y Min")
-        self.rotatey_min_header_lbl.setStyleSheet("font: bold")
-        self.rotatez_min_header_lbl = QtWidgets.QLabel("Z Min")
-        self.rotatez_min_header_lbl.setStyleSheet("font: bold")
-        self.rotatex_max_header_lbl = QtWidgets.QLabel("X Max")
-        self.rotatex_max_header_lbl.setStyleSheet("font: bold")
-        self.rotatey_max_header_lbl = QtWidgets.QLabel("Y Max")
-        self.rotatey_max_header_lbl.setStyleSheet("font: bold")
-        self.rotatez_max_header_lbl = QtWidgets.QLabel("Z Max")
-        self.rotatez_max_header_lbl.setStyleSheet("font: bold")
-        layout = QtWidgets.QGridLayout()
-        layout.addWidget(self.rotate_title_lbl, 0, 0)
-        layout.addWidget(self.rotatex_min_header_lbl, 1, 0)
-        layout.addWidget(self.rotatey_min_header_lbl, 1, 3)
-        layout.addWidget(self.rotatez_min_header_lbl, 1, 6)
-        layout.addWidget(self.rotatex_max_header_lbl, 1, 1)
-        layout.addWidget(self.rotatey_max_header_lbl, 1, 4)
-        layout.addWidget(self.rotatez_max_header_lbl, 1, 7)
-        return layout
-    
-    def _create_scatter_button_ui(self):
-        self.scatter_btn = QtWidgets.QPushButton("Scatter")
+
+    def _create_folder_ui(self):
+        default_folder = Path(cmds.workspace(rootDirectory=True, query=True))
+        default_folder = default_folder / "scenes"
+        self.folder_le = QtWidgets.QLineEdit(default_folder)
+        self.folder_browse_btn = QtWidgets.QPushButton("...")
         layout = QtWidgets.QHBoxLayout()
-        layout.addWidget(self.scatter_btn)
+        layout.addWidget(self.folder_le)
+        layout.addWidget(self.folder_browse_btn)
         return layout
-    
-    def _create_scale_button_ui(self):
-        self.scale_btn = QtWidgets.QPushButton("Scale")
-        layout = QtWidgets.QHBoxLayout()
-        layout.addWidget(self.scale_btn)
-        return layout
-    
-    def _create_rotate_button_ui(self):
-        self.rotate_btn = QtWidgets.QPushButton("Rotate")
-        layout = QtWidgets.QHBoxLayout()
-        layout.addWidget(self.rotate_btn)
-        return layout
-    
-    
+
+
+class SceneFile(object):
+
+    def __init__(self, path=None):
+        self._folder_path = Path(cmds.workspace(
+            query=True, rootDirectory=True)) / "scenes"
+        self.descriptor = 'main'
+        self.task = 'model'
+        self.ver = 1
+        self.ext = '.ma'
+        scene = pmc.system.sceneName()
+        if not path and scene:
+            path = scene
+        if not path and not scene:
+            log.info("Intialize with default properties")
+            return
+        self._init_from_path(path)
+
+    @property
+    def folder_path(self):
+        return self._folder_path
+
+    # Note, look into equivalent getter/setter for other languages and how Python property overide contrasts/compares
+    @folder_path.setter
+    def folder_path(self, val):
+        self._folder_path = Path(val)
+
+    @property
+    def filename(self):
+        pattern = "{descriptor}_{task}_v{ver:03d}{ext}"
+        return pattern.format(descriptor=self.descriptor,
+                              task=self.task, ver=self.ver, ext=self.ext)
+
+    @property
+    def path(self):
+        return self.folder_path / self.filename
+
+    def _init_from_path(self, path):
+        path = Path(path)
+        self.folder_path = path.parent
+        self.ext = path.ext
+        self.descriptor, self.task, ver = re.findall(
+            '([^_]+)+', path.name.stripext())
+        self.ver = int(ver.split("v")[-1])
+
+    def save(self):
+        """Saves the scene file.
+
+        Returns:
+            Path: The path to the scene file if successful
+        """
+        try:
+            return pmc.system.saveAs(self.path)
+        except:
+            log.warning(
+                "Missing directory in specified path. Creating directory")
+            self.folder_path.mkdir_p()
+            return pmc.system.saveAs(self.path)
+
+    def next_avail_ver(self):
+        """Returns the next available version number in a folder."""
+        # pattern = f"{descriptor}_{task}_v*{ext}"  R.I.P. Maya Python still on Python 2
+        pattern = "{descriptor}_{task}_v*{ext}".format(
+            descriptor=self.descriptor, task=self.task, ext=self.ext)
+        matching_scenefiles = []
+        for file_ in self.folder_path.files():
+            if file_.name.fnmatch(pattern):
+                matching_scenefiles.append(file_)
+        if not matching_scenefiles:
+            return 1
+        matching_scenefiles.sort(reverse=True)
+        latest_scenefile = matching_scenefiles[0]
+        # How do I get auto complete here? Does it not work because latest_scene is dynamic?
+        latest_scenefile = latest_scenefile.name.stripext()
+        latest_ver_num = int(latest_scenefile.split("_v")[-1])
+        return latest_ver_num + 1
+
+    def save_increment(self):
+        """Increments the version and saves the scene
+
+        If the exisiting version of a file already exists, it should increment
+        from the largest version number available in the folder.
+
+        Returns:
+            Path: The path to the scene file if successful
+        """
+        self.ver = self.next_avail_ver()
+        self.save()
+
+
+# I get Error: WindowsError: file C:\Program Files\Autodesk\Maya2020\Python\lib\site-packages\pymel\util\path.py line 483: 3
+# when in a new scene. Why?
