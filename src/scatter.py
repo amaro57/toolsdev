@@ -69,13 +69,15 @@ class ScatterToolUI(QtWidgets.QDialog):
         percent_scatter = self.perct_sbx.value()
         percent_scatter = float(percent_scatter) / 100  #no need to strip the %, its a suffix added by Qt
         align_normal = self.align_cbx.isChecked()
+        relative_offset = self.offset_cbx.isChecked()
         scale_val = [self.scalex_min_sbx.value(), self.scalex_max_sbx.value(),
                           self.scaley_min_sbx.value(), self.scaley_max_sbx.value(),
                           self.scalez_min_sbx.value(), self.scalez_max_sbx.value()]
         rotate_val = [self.rotatex_min_sbx.value(), self.rotatex_max_sbx.value(),
                            self.rotatey_min_sbx.value(), self.rotatey_max_sbx.value(),
                            self.rotatez_min_sbx.value(), self.rotatez_max_sbx.value()]
-        self.scenefile.scatter(seed, percent_scatter, align_normal, scale_val, rotate_val)
+        offset_val = [self.offset_min_sbx.value(), self.offset_max_sbx.value()]
+        self.scenefile.scatter(seed, percent_scatter, align_normal, scale_val, rotate_val, offset_val, relative_offset)
 
     def _create_scatter_ui(self):
         self.source_txt = QtWidgets.QTextEdit()
@@ -105,15 +107,40 @@ class ScatterToolUI(QtWidgets.QDialog):
         self.align_cbx_lbl = QtWidgets.QLabel("Align with normals?")
         self.align_cbx_lbl.setStyleSheet("font: bold")
         self.align_cbx = QtWidgets.QCheckBox()
+        self.offset_min_sbx_lbl = QtWidgets.QLabel("Random Offset Min")
+        self.offset_min_sbx_lbl.setStyleSheet("font: bold")
+        self.offset_min_sbx = QtWidgets.QDoubleSpinBox()
+        self.offset_min_sbx.setDecimals(2)
+        self.offset_min_sbx.setSingleStep(0.1)
+        self.offset_min_sbx.setMinimum(-99)
+        self.offset_max_sbx_lbl = QtWidgets.QLabel("Random Offset Max")
+        self.offset_max_sbx_lbl.setStyleSheet("font: bold")
+        self.offset_max_sbx = QtWidgets.QDoubleSpinBox()
+        self.offset_max_sbx.setDecimals(2)
+        self.offset_max_sbx.setSingleStep(0.1)
+        self.offset_max_sbx.setMinimum(-99)
+        self.offset_cbx_lbl = QtWidgets.QLabel("Object relative offset?")
+        self.offset_cbx_lbl.setStyleSheet("font: bold")
+        self.offset_cbx = QtWidgets.QCheckBox()
         layout = QtWidgets.QGridLayout()
         perct_sbx = QtWidgets.QHBoxLayout()
+        offset_sbx = QtWidgets.QHBoxLayout()
+        offset_cbx = QtWidgets.QHBoxLayout()
         perct_sbx.addWidget(self.perct_sbx_lbl)
         perct_sbx.addWidget(self.perct_sbx)
         align_cbx = QtWidgets.QHBoxLayout()
         align_cbx.addWidget(self.align_cbx_lbl)
         align_cbx.addWidget(self.align_cbx)
-        layout.addLayout(perct_sbx, 1, 1, alignment=QtCore.Qt.AlignRight)
-        layout.addLayout(align_cbx, 1, 2,  alignment=QtCore.Qt.AlignCenter)
+        offset_sbx.addWidget(self.offset_min_sbx_lbl)
+        offset_sbx.addWidget(self.offset_min_sbx)
+        offset_sbx.addWidget(self.offset_max_sbx_lbl)
+        offset_sbx.addWidget(self.offset_max_sbx)
+        offset_cbx.addWidget(self.offset_cbx_lbl)
+        offset_cbx.addWidget(self.offset_cbx)
+        layout.addLayout(perct_sbx, 1, 0, alignment=QtCore.Qt.AlignCenter)
+        layout.addLayout(align_cbx, 1, 1,  alignment=QtCore.Qt.AlignCenter)
+        layout.addLayout(offset_sbx, 1, 2, alignment=QtCore.Qt.AlignCenter)
+        layout.addLayout(offset_cbx, 1, 3, alignment=QtCore.Qt.AlignCenter)
         return layout
 
     def _create_scale_ui(self):
@@ -250,6 +277,7 @@ class ScatterToolUI(QtWidgets.QDialog):
         self.rndseed_title_lbl = QtWidgets.QLabel("Random Seed")
         self.rndseed_title_lbl.setStyleSheet("font: bold 20px")
         self.rndseed_seed_sbx = QtWidgets.QSpinBox()
+        self.rndseed_seed_sbx.setRange(0, 99999)
         layout = QtWidgets.QVBoxLayout()
         layout.addWidget(self.rndseed_title_lbl)
         layout.addWidget(self.rndseed_seed_sbx)
@@ -287,12 +315,10 @@ class SceneFile(object):
             
         
 
-    def scatter(self, seed, percent, align, scale, rotate):
+    def scatter(self, seed, percent, align, scale, rotate, offset, relativeOffset):
         random.seed(seed)
         random_amount = int(round(len(self.destSel) * percent))
-        print(len(self.destSel) * percent)
-        print(random_amount)
-        percentage_select = random.sample(self.destSel, k=random_amount)
+        percentage_select = random.sample(self.destSel, k=random_amount) #Refactor to use a flag instead of always running?
         if cmds.objectType(self.sourceObject, isType="transform"):
             for vertex in percentage_select:
                 scaleX = random.uniform(scale[0], scale[1])
@@ -301,7 +327,8 @@ class SceneFile(object):
                 rotateX = random.uniform(rotate[0], rotate[1])
                 rotateY = random.uniform(rotate[2], rotate[3])
                 rotateZ = random.uniform(rotate[4], rotate[5])
-
+                offsetY = random.uniform(offset[0], offset[1])
+                print(offsetY)
                 scatter_instance = cmds.instance(self.sourceObject)
                 position = cmds.pointPosition(vertex, w=True)
                 meshvert = pmc.MeshVertex(vertex)
@@ -316,7 +343,16 @@ class SceneFile(object):
                 if align:
                     cmds.xform(scatter_instance, ws=True, m=matrix_transform) #How to include scale and rotation into 4x4 matrix supplied?
                     cmds.scale(scaleX, scaleY, scaleZ, scatter_instance)
+                    if relativeOffset:  #Better way to do this than two flags? Dislike how this feels
+                        cmds.move(0, offsetY, 0, scatter_instance, r=True, os=True, wd=True)
+                    else:
+                        cmds.move(0, offsetY, 0, scatter_instance, r=True, ws=True)
                     #cmds.rotate(rotateX, rotateY, rotateZ, scatter_instance)
+                    #This method is not constraining instances to parent vertices. What's missing vs things like Point on Poly?
                     continue
                 cmds.xform(scatter_instance, scale=[scaleX, scaleY, scaleZ], rotation=[rotateX, rotateY, rotateZ],
-                           translation=[position[0], position[1], position[2]], ws=True)
+                        translation=[position[0], position[1], position[2]], ws=True)
+                if relativeOffset:
+                    cmds.move(0, offsetY, 0, scatter_instance, r=True, os=True, wd=True)
+                else:
+                    cmds.move(0, offsetY, 0, scatter_instance, r=True, ws=True)
