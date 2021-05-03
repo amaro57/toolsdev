@@ -67,6 +67,7 @@ class ScatterToolUI(QtWidgets.QDialog):
     def _scatter(self):
         seed = self.rndseed_seed_sbx.value()
         percent_scatter = self.perct_sbx.value()
+        percent_scatter = float(percent_scatter) / 100  #no need to strip the %, its a suffix added by Qt
         align_normal = self.align_cbx.isChecked()
         scale_val = [self.scalex_min_sbx.value(), self.scalex_max_sbx.value(),
                           self.scaley_min_sbx.value(), self.scaley_max_sbx.value(),
@@ -98,7 +99,7 @@ class ScatterToolUI(QtWidgets.QDialog):
         self.perct_sbx_lbl = QtWidgets.QLabel("Percentage Scatter")
         self.perct_sbx_lbl.setStyleSheet("font: bold")
         self.perct_sbx = QtWidgets.QDoubleSpinBox()
-        self.perct_sbx.setDecimals(0)
+        self.perct_sbx.setDecimals(1)
         self.perct_sbx.setValue(100)
         self.perct_sbx.setSuffix(" %")
         self.align_cbx_lbl = QtWidgets.QLabel("Align with normals?")
@@ -288,8 +289,12 @@ class SceneFile(object):
 
     def scatter(self, seed, percent, align, scale, rotate):
         random.seed(seed)
+        random_amount = int(round(len(self.destSel) * percent))
+        print(len(self.destSel) * percent)
+        print(random_amount)
+        percentage_select = random.sample(self.destSel, k=random_amount)
         if cmds.objectType(self.sourceObject, isType="transform"):
-            for vertex in self.destSel:
+            for vertex in percentage_select:
                 scaleX = random.uniform(scale[0], scale[1])
                 scaleY = random.uniform(scale[2], scale[3])
                 scaleZ = random.uniform(scale[4], scale[5])
