@@ -5,6 +5,7 @@ from PySide2 import QtCore, QtWidgets
 from shiboken2 import wrapInstance
 import maya.OpenMayaUI as omui
 import maya.cmds as cmds
+import random
 
 
 def maya_main_window():
@@ -229,8 +230,19 @@ class SceneFile(object):
         selection = cmds.ls(os=True, fl=True)
         self.destSel = cmds.filterExpand(
             selection, selectionMask=31, expand=True)
-        print(self.destSel)
-        return self.destSel
+        if self.destSel is not None:
+            print(self.destSel)
+            return self.destSel
+        else:
+            convVert = cmds.polyListComponentConversion(selection, tv=True)
+            self.destSel = cmds.filterExpand(
+                convVert, selectionMask=31, expand=True)  
+            print(self.destSel)
+            return self.destSel
+        """Is there a better way to do this than expanding selection.vtx[*] into every single vert?
+            Only use and display selection.vtx[*], since a can only select one Warning is given"""
+            
+        
 
     def scatter(self, scale, rotate):
         random.seed(1234)
