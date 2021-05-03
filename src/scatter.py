@@ -63,16 +63,17 @@ class ScatterToolUI(QtWidgets.QDialog):
 
     @QtCore.Slot()
     def _scatter(self):
-        self.scale_val = [self.scalex_min_sbx.value(), self.scalex_max_sbx.value(),
+        percent_scatter = self.perct_sbx.value()
+        align_normal = self.align_cbx.isChecked()
+        scale_val = [self.scalex_min_sbx.value(), self.scalex_max_sbx.value(),
                           self.scaley_min_sbx.value(), self.scaley_max_sbx.value(),
                           self.scalez_min_sbx.value(), self.scalez_max_sbx.value()]
-        self.rotate_val = [self.rotatex_min_sbx.value(), self.rotatex_max_sbx.value(),
+        rotate_val = [self.rotatex_min_sbx.value(), self.rotatex_max_sbx.value(),
                            self.rotatey_min_sbx.value(), self.rotatey_max_sbx.value(),
                            self.rotatez_min_sbx.value(), self.rotatez_max_sbx.value()]
-        self.scenefile.scatter(self.scale_val, self.rotate_val)
+        self.scenefile.scatter(percent_scatter, align_normal, scale_val, rotate_val)
 
     def _create_scatter_ui(self):
-        layout = self._create_scale_headers()
         self.source_txt = QtWidgets.QTextEdit()
         self.source_txt.setTextInteractionFlags(QtCore.Qt.NoTextInteraction)
         self.source_txt.setFixedHeight(30)
@@ -81,11 +82,17 @@ class ScatterToolUI(QtWidgets.QDialog):
         self.dest_txt.setTextInteractionFlags(QtCore.Qt.NoTextInteraction)
         self.dest_txt.setFixedHeight(50)
         self.dest_btn = QtWidgets.QPushButton("Set Scatter Destination")
-        layout = QtWidgets.QHBoxLayout()
-        layout.addWidget(self.source_txt)
-        layout.addWidget(self.source_btn)
-        layout.addWidget(self.dest_txt)
-        layout.addWidget(self.dest_btn)
+        self.perct_sbx = QtWidgets.QDoubleSpinBox()
+        self.perct_sbx.setDecimals(0)
+        self.perct_sbx.setSuffix(" %")
+        self.align_cbx = QtWidgets.QCheckBox()
+        layout = QtWidgets.QGridLayout()
+        layout.addWidget(self.source_btn, 0, 0)
+        layout.addWidget(self.source_txt, 0, 1)
+        layout.addWidget(self.dest_btn, 0, 2)
+        layout.addWidget(self.dest_txt, 0, 3)
+        layout.addWidget(self.perct_sbx, 1, 1)
+        layout.addWidget(self.align_cbx, 1, 3)
         return layout
 
     def _create_scale_ui(self):
@@ -109,11 +116,11 @@ class ScatterToolUI(QtWidgets.QDialog):
         self.scalez_max_sbx.setDecimals(1)
         self.scalez_max_sbx.setSingleStep(0.1)
         layout.addWidget(self.scalex_min_sbx, 2, 0)
-        layout.addWidget(self.scaley_min_sbx, 2, 3)
-        layout.addWidget(self.scalez_min_sbx, 2, 6)
-        layout.addWidget(self.scalex_max_sbx, 2, 1)
+        layout.addWidget(self.scaley_min_sbx, 2, 1)
+        layout.addWidget(self.scalez_min_sbx, 2, 2)
+        layout.addWidget(self.scalex_max_sbx, 2, 3)
         layout.addWidget(self.scaley_max_sbx, 2, 4)
-        layout.addWidget(self.scalez_max_sbx, 2, 7)
+        layout.addWidget(self.scalez_max_sbx, 2, 5)
         return layout
 
     def _create_scale_headers(self):
@@ -134,11 +141,11 @@ class ScatterToolUI(QtWidgets.QDialog):
         layout = QtWidgets.QGridLayout()
         layout.addWidget(self.scale_title_lbl, 0, 0)
         layout.addWidget(self.scalex_min_header_lbl, 1, 0)
-        layout.addWidget(self.scaley_min_header_lbl, 1, 3)
-        layout.addWidget(self.scalez_min_header_lbl, 1, 6)
-        layout.addWidget(self.scalex_max_header_lbl, 1, 1)
+        layout.addWidget(self.scaley_min_header_lbl, 1, 1)
+        layout.addWidget(self.scalez_min_header_lbl, 1, 2)
+        layout.addWidget(self.scalex_max_header_lbl, 1, 3)
         layout.addWidget(self.scaley_max_header_lbl, 1, 4)
-        layout.addWidget(self.scalez_max_header_lbl, 1, 7)
+        layout.addWidget(self.scalez_max_header_lbl, 1, 5)
         return layout
 
     def _create_rotate_ui(self):
@@ -162,11 +169,11 @@ class ScatterToolUI(QtWidgets.QDialog):
         self.rotatey_max_sbx.setWrapping(True)
         self.rotatez_max_sbx.setWrapping(True)
         layout.addWidget(self.rotatex_min_sbx, 2, 0)
-        layout.addWidget(self.rotatey_min_sbx, 2, 3)
-        layout.addWidget(self.rotatez_min_sbx, 2, 6)
-        layout.addWidget(self.rotatex_max_sbx, 2, 1)
+        layout.addWidget(self.rotatey_min_sbx, 2, 1)
+        layout.addWidget(self.rotatez_min_sbx, 2, 2)
+        layout.addWidget(self.rotatex_max_sbx, 2, 3)
         layout.addWidget(self.rotatey_max_sbx, 2, 4)
-        layout.addWidget(self.rotatez_max_sbx, 2, 7)
+        layout.addWidget(self.rotatez_max_sbx, 2, 5)
         return layout
 
     def _create_rotate_headers(self):
@@ -187,11 +194,11 @@ class ScatterToolUI(QtWidgets.QDialog):
         layout = QtWidgets.QGridLayout()
         layout.addWidget(self.rotate_title_lbl, 0, 0)
         layout.addWidget(self.rotatex_min_header_lbl, 1, 0)
-        layout.addWidget(self.rotatey_min_header_lbl, 1, 3)
-        layout.addWidget(self.rotatez_min_header_lbl, 1, 6)
-        layout.addWidget(self.rotatex_max_header_lbl, 1, 1)
+        layout.addWidget(self.rotatey_min_header_lbl, 1, 1)
+        layout.addWidget(self.rotatez_min_header_lbl, 1, 2)
+        layout.addWidget(self.rotatex_max_header_lbl, 1, 3)
         layout.addWidget(self.rotatey_max_header_lbl, 1, 4)
-        layout.addWidget(self.rotatez_max_header_lbl, 1, 7)
+        layout.addWidget(self.rotatez_max_header_lbl, 1, 5)
         return layout
 
     def _create_scatter_button_ui(self):
@@ -244,7 +251,7 @@ class SceneFile(object):
             
         
 
-    def scatter(self, scale, rotate):
+    def scatter(self, percent, align, scale, rotate):
         random.seed(1234)
 
         scaleX = random.uniform(scale[0], scale[1])
