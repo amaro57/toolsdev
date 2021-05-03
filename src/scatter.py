@@ -171,7 +171,6 @@ class ScatterToolUI(QtWidgets.QDialog):
         self.scalez_max_sbx = QtWidgets.QDoubleSpinBox()
         self.scalez_max_sbx.setDecimals(1)
         self.scalez_max_sbx.setSingleStep(0.1)
-        # Cleaner way to organize all these set methods?
         self.scalez_max_sbx.setValue(1)
         layout.addWidget(self.scalex_min_sbx, 2, 0)
         layout.addWidget(self.scalex_max_sbx, 2, 1)
@@ -180,6 +179,7 @@ class ScatterToolUI(QtWidgets.QDialog):
         layout.addWidget(self.scalez_min_sbx, 2, 4)
         layout.addWidget(self.scalez_max_sbx, 2, 5)
         return layout
+        # Cleaner way to organize all these set methods?
 
     def _create_scale_headers(self):
         self.scale_title_lbl = QtWidgets.QLabel("Random Scale")
@@ -321,8 +321,8 @@ class SceneFile(object):
                 rotate, offset, relativeOffset):
         random.seed(seed)
         random_amount = int(round(len(self.destSel) * percent))
-        # Refactor to use a flag instead of always running?
         percentage_select = random.sample(self.destSel, k=random_amount)
+        # Refactor prcnt_select to use a flag instead of always running?
         if cmds.objectType(self.sourceObject, isType="transform"):
             for vertex in percentage_select:
                 scaleX = random.uniform(scale[0], scale[1])
@@ -344,9 +344,9 @@ class SceneFile(object):
                                     vtx_normal.x, vtx_normal.y, vtx_normal.z, 0.0,
                                     tangent.x, tangent.y, tangent.z, 0.0,
                                     position[0], position[1], position[2], 1.0]
+                # How to include scale and rotation into 4x4 matrix
+                # supplied?
                 if align:
-                    # How to include scale and rotation into 4x4 matrix
-                    # supplied?
                     cmds.xform(scatter_instance, ws=True, m=matrix_transform)
                     cmds.scale(scaleX, scaleY, scaleZ, scatter_instance)
                     if relativeOffset:  # Better way to do this than two flags? Dislike how this feels
