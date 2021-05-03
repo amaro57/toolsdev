@@ -37,12 +37,14 @@ class ScatterToolUI(QtWidgets.QDialog):
         self.scale_btn_lay = self._create_scale_button_ui()
         self.rotate_lay = self._create_rotate_ui()
         self.rotate_btn_lay = self._create_rotate_button_ui()
+        self.rndseed_lay = self._create_random_seed_ui()
         self.main_lay = QtWidgets.QVBoxLayout()
         self.main_lay.addWidget(self.title_lbl)
         self.main_lay.addLayout(self.scatter_lay)
         self.main_lay.addLayout(self.scatter_btn_lay)
         self.main_lay.addLayout(self.scale_lay)
         self.main_lay.addLayout(self.rotate_lay)
+        self.main_lay.addLayout(self.rndseed_lay)
         self.setLayout(self.main_lay)
 
     def create_connections(self):
@@ -63,6 +65,7 @@ class ScatterToolUI(QtWidgets.QDialog):
 
     @QtCore.Slot()
     def _scatter(self):
+        seed = self.rndseed_seed_sbx.value()
         percent_scatter = self.perct_sbx.value()
         align_normal = self.align_cbx.isChecked()
         scale_val = [self.scalex_min_sbx.value(), self.scalex_max_sbx.value(),
@@ -71,7 +74,7 @@ class ScatterToolUI(QtWidgets.QDialog):
         rotate_val = [self.rotatex_min_sbx.value(), self.rotatex_max_sbx.value(),
                            self.rotatey_min_sbx.value(), self.rotatey_max_sbx.value(),
                            self.rotatez_min_sbx.value(), self.rotatez_max_sbx.value()]
-        self.scenefile.scatter(percent_scatter, align_normal, scale_val, rotate_val)
+        self.scenefile.scatter(seed, percent_scatter, align_normal, scale_val, rotate_val)
 
     def _create_scatter_ui(self):
         self.source_txt = QtWidgets.QTextEdit()
@@ -116,10 +119,10 @@ class ScatterToolUI(QtWidgets.QDialog):
         self.scalez_max_sbx.setDecimals(1)
         self.scalez_max_sbx.setSingleStep(0.1)
         layout.addWidget(self.scalex_min_sbx, 2, 0)
-        layout.addWidget(self.scaley_min_sbx, 2, 1)
-        layout.addWidget(self.scalez_min_sbx, 2, 2)
-        layout.addWidget(self.scalex_max_sbx, 2, 3)
-        layout.addWidget(self.scaley_max_sbx, 2, 4)
+        layout.addWidget(self.scalex_max_sbx, 2, 1)
+        layout.addWidget(self.scaley_min_sbx, 2, 2)
+        layout.addWidget(self.scaley_max_sbx, 2, 3)
+        layout.addWidget(self.scalez_min_sbx, 2, 4)
         layout.addWidget(self.scalez_max_sbx, 2, 5)
         return layout
 
@@ -141,10 +144,10 @@ class ScatterToolUI(QtWidgets.QDialog):
         layout = QtWidgets.QGridLayout()
         layout.addWidget(self.scale_title_lbl, 0, 0)
         layout.addWidget(self.scalex_min_header_lbl, 1, 0)
-        layout.addWidget(self.scaley_min_header_lbl, 1, 1)
-        layout.addWidget(self.scalez_min_header_lbl, 1, 2)
-        layout.addWidget(self.scalex_max_header_lbl, 1, 3)
-        layout.addWidget(self.scaley_max_header_lbl, 1, 4)
+        layout.addWidget(self.scalex_max_header_lbl, 1, 1)
+        layout.addWidget(self.scaley_min_header_lbl, 1, 2)
+        layout.addWidget(self.scaley_max_header_lbl, 1, 3)
+        layout.addWidget(self.scalez_min_header_lbl, 1, 4)
         layout.addWidget(self.scalez_max_header_lbl, 1, 5)
         return layout
 
@@ -169,10 +172,10 @@ class ScatterToolUI(QtWidgets.QDialog):
         self.rotatey_max_sbx.setWrapping(True)
         self.rotatez_max_sbx.setWrapping(True)
         layout.addWidget(self.rotatex_min_sbx, 2, 0)
-        layout.addWidget(self.rotatey_min_sbx, 2, 1)
-        layout.addWidget(self.rotatez_min_sbx, 2, 2)
-        layout.addWidget(self.rotatex_max_sbx, 2, 3)
-        layout.addWidget(self.rotatey_max_sbx, 2, 4)
+        layout.addWidget(self.rotatex_max_sbx, 2, 1)
+        layout.addWidget(self.rotatey_min_sbx, 2, 2)
+        layout.addWidget(self.rotatey_max_sbx, 2, 3)
+        layout.addWidget(self.rotatez_min_sbx, 2, 4)
         layout.addWidget(self.rotatez_max_sbx, 2, 5)
         return layout
 
@@ -194,10 +197,10 @@ class ScatterToolUI(QtWidgets.QDialog):
         layout = QtWidgets.QGridLayout()
         layout.addWidget(self.rotate_title_lbl, 0, 0)
         layout.addWidget(self.rotatex_min_header_lbl, 1, 0)
-        layout.addWidget(self.rotatey_min_header_lbl, 1, 1)
-        layout.addWidget(self.rotatez_min_header_lbl, 1, 2)
-        layout.addWidget(self.rotatex_max_header_lbl, 1, 3)
-        layout.addWidget(self.rotatey_max_header_lbl, 1, 4)
+        layout.addWidget(self.rotatex_max_header_lbl, 1, 1)
+        layout.addWidget(self.rotatey_min_header_lbl, 1, 2)
+        layout.addWidget(self.rotatey_max_header_lbl, 1, 3)
+        layout.addWidget(self.rotatez_min_header_lbl, 1, 4)
         layout.addWidget(self.rotatez_max_header_lbl, 1, 5)
         return layout
 
@@ -217,6 +220,15 @@ class ScatterToolUI(QtWidgets.QDialog):
         self.rotate_btn = QtWidgets.QPushButton("Rotate")
         layout = QtWidgets.QHBoxLayout()
         layout.addWidget(self.rotate_btn)
+        return layout
+    
+    def _create_random_seed_ui(self):
+        self.rndseed_title_lbl = QtWidgets.QLabel("Random Seed")
+        self.rndseed_title_lbl.setStyleSheet("font: bold 20px")
+        self.rndseed_seed_sbx = QtWidgets.QSpinBox()
+        layout = QtWidgets.QVBoxLayout()
+        layout.addWidget(self.rndseed_title_lbl)
+        layout.addWidget(self.rndseed_seed_sbx)
         return layout
 
     def parseArray(self, selection):
@@ -251,26 +263,32 @@ class SceneFile(object):
             
         
 
-    def scatter(self, percent, align, scale, rotate):
-        random.seed(1234)
-
-        scaleX = random.uniform(scale[0], scale[1])
-        scaleY = random.uniform(scale[2], scale[3])
-        scaleZ = random.uniform(scale[4], scale[5])
-        rotateX = random.uniform(rotate[0], rotate[1])
-        rotateY = random.uniform(rotate[2], rotate[3])
-        rotateZ = random.uniform(rotate[4], rotate[5])
-
+    def scatter(self, seed, percent, align, scale, rotate):
+        random.seed(seed)
         if cmds.objectType(self.sourceObject, isType="transform"):
             for vertex in self.destSel:
-                newInstance = cmds.instance(self.sourceObject)
+                scaleX = random.uniform(scale[0], scale[1])
+                scaleY = random.uniform(scale[2], scale[3])
+                scaleZ = random.uniform(scale[4], scale[5])
+                rotateX = random.uniform(rotate[0], rotate[1])
+                rotateY = random.uniform(rotate[2], rotate[3])
+                rotateZ = random.uniform(rotate[4], rotate[5])
+
+                scatter_instance = cmds.instance(self.sourceObject)
                 position = cmds.pointPosition(vertex, w=True)
-                cmds.move(
-                    position[0],
-                    position[1],
-                    position[2],
-                    newInstance,
-                    a=True,
-                    ws=True)
-                cmds.scale(scaleX, scaleY, scaleZ, newInstance)
-                cmds.rotate(rotateX, rotateY, rotateZ, newInstance)
+                meshvert = pmc.MeshVertex(vertex)
+                vtx_normal = meshvert.getNormal()
+                up_vector = pmc.datatypes.Vector(0.0, 1.0, 0)
+                tangent = vtx_normal.cross(up_vector).normal()
+                tangent2 = vtx_normal.cross(tangent).normal()
+                matrix_transform = [tangent2.x, tangent2.y, tangent2.z, 0.0,
+                                    vtx_normal.x, vtx_normal.y, vtx_normal.z, 0.0,
+                                    tangent.x, tangent.y, tangent.z, 0.0,
+                                    position[0], position[1], position[2], 1.0]
+                if align:
+                    cmds.xform(scatter_instance, ws=True, m=matrix_transform) #How to include scale and rotation into 4x4 matrix supplied?
+                    cmds.scale(scaleX, scaleY, scaleZ, scatter_instance)
+                    #cmds.rotate(rotateX, rotateY, rotateZ, scatter_instance)
+                    continue
+                cmds.xform(scatter_instance, scale=[scaleX, scaleY, scaleZ], rotation=[rotateX, rotateY, rotateZ],
+                           translation=[position[0], position[1], position[2]], ws=True)
